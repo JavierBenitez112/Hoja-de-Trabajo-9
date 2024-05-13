@@ -1,52 +1,37 @@
 import heapq
 import networkx as nx
+import matplotlib.pyplot as plt
 
 def GraphCreation(PathFile: str) -> nx.Graph:
     with open(PathFile, 'r') as f:
         G = nx.Graph()
         for line in f:
-            line = line.split(",")
+            line = line.split(",") # Separar por coma
             G.add_edge(line[0], line[1], weight=float(line[2]))  # Convertir el peso a float
     return G 
 
-def dijkstra_shortest_path(G, start, end):
-    distances = {node: float('inf') for node in G.nodes()}
-    distances[start] = 0
-    queue = [(0, start)]
+
+def draw_paths(G, paths, colors, path_label) -> None:
+    num_paths = len(paths)
+    fig, axes = plt.subplots(1, num_paths, figsize=(5*num_paths, 5))
     
-    while queue:
-        current_distance, current_node = heapq.heappop(queue)
+    for i, (path, color) in enumerate(zip(paths, colors)):
+        pos = nx.spring_layout(G) #positions for all nodes with cools layout I didn't knew existed
+        edges = [(path[j], path[j + 1]) for j in range(len(path) - 1)] #grabs all the edges
         
-        if current_distance > distances[current_node]:
-            continue
+        ax = axes[i] if num_paths > 1 else axes  # idunno, magic
+        ax.set_title(f"{path_label}")
         
-        if current_node == end:
-            break
-        
-        for neighbor in G.neighbors(current_node):
-            distance = current_distance + G[current_node][neighbor]['weight']
-            if distance < distances[neighbor]:
-                distances[neighbor] = distance
-                heapq.heappush(queue, (distance, neighbor))
-    
-    if distances[end] == float('inf'):
-        return None
-    
-    path = [end]
-    current_node = end
-    
-    while current_node != start:
-        for neighbor in G.neighbors(current_node):
-            if distances[neighbor] == distances[current_node] - G[current_node][neighbor]['weight']:
-                path.append(neighbor)
-                current_node = neighbor
-                break
-    
-    path.reverse()
-    return path
+        nx.draw_networkx_nodes(G, pos, nodelist=path, node_color=color, node_size=700, ax=ax) # draw nodes taken with the DFS
+        nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color=color, width=2, ax=ax) # draw edges taken with the DFS
+        labels = {node: node for node in path} # self explanatory
+        nx.draw_networkx_labels(G, pos, labels=labels, ax=ax) # also self explanatory
+
+    plt.tight_layout() #for the overlapping nodes (fuck those things)
+
 
 def ShowAllDestinations(G: nx.Graph, source: str) -> None:
-    def dfs_with_graph(G, start, end, path=[]):
+    def dfs_with_graph(G, start, end, path=[]): #classic dfs for graphs (you know how it works)
         path = path + [start]
         if start == end:
             return [path]
@@ -60,21 +45,10 @@ def ShowAllDestinations(G: nx.Graph, source: str) -> None:
                     paths.append(newpath)
         return paths
 
-    def draw_paths(G, paths):
-        pos = nx.spring_layout(G)
-        for path in paths:
-            edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
-            nx.draw_networkx_nodes(G, pos, nodelist=path, node_color='g', node_size=700)
-            nx.draw_networkx_edges(G, pos, edgelist=edges, edge_color='g', width=2)
-            labels = {node: node for node in path}
-            nx.draw_networkx_labels(G, pos, labels=labels)
-
     all_destinations = G.nodes()
     for destination in all_destinations:
         if destination != source:
-            all_paths = dfs_with_graph(G, source, destination)
+            all_paths = dfs_with_graph(G, source, destination) # applies dfs to that node
             if all_paths:
-                print(f"All possible paths from {source} to {destination}:")
                 for path in all_paths:
-                    print(path)
-                    draw_paths(G, [path])
+                    draw_paths(G, [path], 'red', f"camino {source} -> {destination}") #if all_paths returns something it graphs it

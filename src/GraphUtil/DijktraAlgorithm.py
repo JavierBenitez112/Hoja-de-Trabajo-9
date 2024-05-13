@@ -1,7 +1,7 @@
 import heapq #heapq GOAT
+import networkx as nx
 
-#TODO: Implement Dijkstra's in the other thing
-def dijkstra(G, start, end):
+def dijkstra(G, start, end)->list: #Dude, is dijkstra, just search it up
     distances = {node: float('inf') for node in G.nodes()}
     distances[start] = 0
     queue = [(0, start)]
@@ -29,7 +29,7 @@ def dijkstra(G, start, end):
     
     while current_node != start:
         for neighbor in G.neighbors(current_node):
-            if distances[neighbor] == distances[current_node] - 1:
+            if distances[neighbor] == distances[current_node] - float(G[current_node][neighbor]['weight']):
                 path.append(neighbor)
                 current_node = neighbor
                 break
