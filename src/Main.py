@@ -6,10 +6,10 @@ import GraphUtil.DijktraAlgorithm as djs
 if __name__ == "__main__":
     G = Graph.GraphCreation("src/rutas.txt")
 
-    #input_source = input("Enter the source: ")
-    input_source = "Pueblo Paleta"
-    #input_destination = input("Enter the destination: ")
-    input_destination = "Aldea Azalea"
+    input_source = input("Enter the source: ")
+    #input_source = "Pueblo Paleta"
+    input_destination = input("Enter the destination: ")
+    #input_destination = "Aldea Azalea"
 
     # Muestra todos los posibles caminos
     Graph.ShowAllDestinations(G, input_source)
